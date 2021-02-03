@@ -55,7 +55,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `groupomania`.`commentaires` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `content` TEXT NOT NULL,
-  `created_at` VARCHAR(45) NOT NULL,
+  `created_at` DATETIME NOT NULL,
   `articles_id` INT UNSIGNED NOT NULL,
   `users_id` INT NOT NULL,
   PRIMARY KEY (`id`),
