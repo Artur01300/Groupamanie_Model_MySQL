@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS `groupomania`.`users` (
   `name` VARCHAR(30) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NOT NULL,
   `email` VARCHAR(255) NOT NULL,
   `password` VARCHAR(100) NOT NULL,
-  `isAdmin` TINYINT(1) NULL,
-  `idimage` VARCHAR(255) NULL,
+  `isAdmin` TINYINT(1) NOT NULL DEFAULT 0,
+  `state` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id_user`),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE)
 ENGINE = InnoDB;
@@ -33,14 +33,13 @@ ENGINE = InnoDB;
 -- Table `groupomania`.`articles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `groupomania`.`articles` (
-  `id_article` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_article` INT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(200) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NOT NULL,
   `content` TEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NULL,
   `create_at` DATETIME NOT NULL DEFAULT now(),
   `image` VARCHAR(255) NULL,
   `users_id_user` INT NOT NULL,
   PRIMARY KEY (`id_article`),
-  UNIQUE INDEX `id_UNIQUE` (`id_article` ASC) VISIBLE,
   INDEX `fk_articles_users1_idx` (`users_id_user` ASC) VISIBLE,
   CONSTRAINT `fk_articles_users1`
     FOREIGN KEY (`users_id_user`)
@@ -54,13 +53,12 @@ ENGINE = InnoDB;
 -- Table `groupomania`.`comment`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `groupomania`.`comment` (
-  `id_comment` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_comment` INT NOT NULL AUTO_INCREMENT,
   `content` TEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_unicode_ci' NOT NULL,
   `created_at` DATETIME NOT NULL DEFAULT now(),
   `users_id_user` INT NOT NULL,
-  `articles_id_article` INT UNSIGNED NOT NULL,
+  `articles_id_article` INT NOT NULL,
   PRIMARY KEY (`id_comment`),
-  UNIQUE INDEX `id_UNIQUE` (`id_comment` ASC) VISIBLE,
   INDEX `fk_comment_users1_idx` (`users_id_user` ASC) VISIBLE,
   INDEX `fk_comment_articles1_idx` (`articles_id_article` ASC) VISIBLE,
   CONSTRAINT `fk_comment_users1`
@@ -71,34 +69,45 @@ CREATE TABLE IF NOT EXISTS `groupomania`.`comment` (
   CONSTRAINT `fk_comment_articles1`
     FOREIGN KEY (`articles_id_article`)
     REFERENCES `groupomania`.`articles` (`id_article`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+USE `groupomania` ;
 
 -- -----------------------------------------------------
--- Table `groupomania`.`likes`
+-- Placeholder table for view `groupomania`.`v_getOneArticle`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `groupomania`.`likes` (
-  `like` TINYINT UNSIGNED NULL DEFAULT 0,
-  `dislike` TINYINT UNSIGNED NULL DEFAULT 0,
-  `articles_id_article` INT UNSIGNED NOT NULL,
-  `users_id_user` INT NOT NULL,
-  PRIMARY KEY (`articles_id_article`, `users_id_user`),
-  INDEX `fk_likes_articles1_idx` (`articles_id_article` ASC) VISIBLE,
-  INDEX `fk_likes_users1_idx` (`users_id_user` ASC) VISIBLE,
-  CONSTRAINT `fk_likes_articles1`
-    FOREIGN KEY (`articles_id_article`)
-    REFERENCES `groupomania`.`articles` (`id_article`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_likes_users1`
-    FOREIGN KEY (`users_id_user`)
-    REFERENCES `groupomania`.`users` (`id_user`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS `groupomania`.`v_getOneArticle` (`id_user` INT, `name` INT, `title` INT, `content` INT, `image` INT, `create_at` INT, `id_article` INT);
 
+-- -----------------------------------------------------
+-- Placeholder table for view `groupomania`.`v_get_one_comment_from_user`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `groupomania`.`v_get_one_comment_from_user` (`name` INT, `content` INT, `created_at` INT, `id_comment` INT, `articles_id_article` INT, `users_id_user` INT);
+
+-- -----------------------------------------------------
+-- View `groupomania`.`v_getOneArticle`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `groupomania`.`v_getOneArticle`;
+USE `groupomania`;
+CREATE  OR REPLACE VIEW `v_getOneArticle` AS
+SELECT users.id_user, users.name,  articles.title, articles.content, articles.image, articles.create_at, articles.id_article 
+FROM groupomania.users
+RIGHT JOIN groupomania.articles
+ON users.id_user = articles.users_id_user
+ORDER BY articles.create_at DESC;
+
+-- -----------------------------------------------------
+-- View `groupomania`.`v_get_one_comment_from_user`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `groupomania`.`v_get_one_comment_from_user`;
+USE `groupomania`;
+CREATE  OR REPLACE VIEW `v_get_one_comment_from_user` AS
+SELECT users.name, comment.content, comment.created_at, comment.id_comment, comment.articles_id_article, comment.users_id_user
+FROM groupomania.comment
+Right JOIN groupomania.users 
+ON users.id_user = groupomania.comment.users_id_user
+ORDER BY comment.created_at DESC;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
