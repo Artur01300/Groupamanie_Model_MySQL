@@ -1,0 +1,27 @@
+
+****************** Pour v_articleswithuseravatars *******************
+
+CREATE 
+    ALGORITHM = UNDEFINED 
+    DEFINER = `root`@`localhost` 
+    SQL SECURITY DEFINER
+VIEW `groupomania`.`v_articleswithuseravatars` AS
+    SELECT 
+        `groupomania`.`users`.`id_user` AS `id_user`,
+        `groupomania`.`users`.`name` AS `name`,
+        `groupomania`.`articles`.`title` AS `title`,
+        `groupomania`.`articles`.`content` AS `content`,
+        `groupomania`.`articles`.`image` AS `image`,
+        `groupomania`.`articles`.`create_at` AS `create_at`,
+        `groupomania`.`articles`.`id_article` AS `id_article`,
+        `groupomania`.`avatar`.`img_avatar` AS `img_avatar`
+    FROM
+        ((`groupomania`.`articles`
+        LEFT JOIN `groupomania`.`users` ON ((`groupomania`.`articles`.`users_id_user` = `groupomania`.`users`.`id_user`)))
+        LEFT JOIN `groupomania`.`avatar` ON ((`groupomania`.`articles`.`users_id_user` = `groupomania`.`avatar`.`users_id_user`)))
+    ORDER BY `groupomania`.`articles`.`create_at` DESC
+
+ ********************         ******************************
+signifie : joindre à la table user de la table articles contenant users_id_user et que cet user_id_user est comment avec users.id_user
+
+attention ! les table qu'on fait la joinction, leur id doiv etre lier(unique)
